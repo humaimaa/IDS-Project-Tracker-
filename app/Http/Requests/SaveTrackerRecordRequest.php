@@ -19,6 +19,9 @@ class SaveTrackerRecordRequest extends FormRequest
         $options = [];
         $references = TrackerRecord::where('module', 'references')->get();
         $projects = TrackerRecord::where('module', 'projects')->get()->pluck('data.name')->filter()->all();
+        if ($module === 'issues') {
+            $projects = array_merge($projects, array_column(config('dashboard.projects'), 'name'));
+        }
         $types = ['agency' => 'Implementing agency', 'districts' => 'District', 'sectors' => 'Sector', 'partners' => 'Development partner'];
         foreach (config("tracker.{$module}.fields") as $field) {
             [$name, $label, $type] = $field;

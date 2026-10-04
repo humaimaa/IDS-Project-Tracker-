@@ -13,6 +13,12 @@ class TrackerPagesTest extends TestCase
 {
     use LazilyRefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        config(['dashboard.presentation' => false]);
+    }
+
     public static function modules(): array
     {
         return array_map(fn (string $module): array => [$module], ['projects', 'activities', 'issues', 'meetings', 'reports', 'users', 'references', 'roles']);
@@ -55,7 +61,7 @@ class TrackerPagesTest extends TestCase
         $record = TrackerRecord::where('module', $module)->sole();
         $response->assertRedirect(route("{$module}.show", $record));
         $this->assertSame('Test record', $record->data['name']);
-        $this->get("/{$module}")->assertSee('Test record')->assertViewIs("{$module}.index");
+        $this->get("/{$module}")->assertSee('Test record')->assertViewIs($module === 'projects' ? 'projects.portfolio-index' : "{$module}.index");
         $this->get("/{$module}/{$record->id}")->assertSee('Test record')->assertViewIs("{$module}.show");
         $this->get("/{$module}/{$record->id}/edit")->assertOk()->assertViewIs("{$module}.edit");
         $values['name'] = 'Updated record';
@@ -93,18 +99,21 @@ class TrackerPagesTest extends TestCase
         $this->get('/projects/create')->assertSee('New donor')->assertDontSee('Reference Lists');
     }
 
-    public function test_kp_districts_are_available_in_project_and_dashboard_lists(): void
+    public function test_kp_districts_are_available_in_creation_and_chart_filters_with_a_simple_project_list(): void
     {
-        foreach (['/projects/create', '/'] as $page) {
+        foreach (['/projects/create'] as $page) {
             $this->get($page)->assertSee('Abbottabad')->assertSee('Upper Chitral')
                 ->assertSee('Paharpur')->assertSee('Upper Swat')->assertSee('Bajaur')
                 ->assertSee('Merged districts')->assertDontSee('F.A.T.A');
         }
 
         $values = TrackerRecord::factory()->make()->data;
+        $this->get('/projects')->assertDontSee('<select class="field mt-2" name="district">', false);
         $values['districts'] = ['Abbottabad', 'Bajaur', 'Merged districts'];
         $this->post('/projects', $values)->assertSessionHasNoErrors();
         $this->assertSame($values['districts'], TrackerRecord::where('module', 'projects')->sole()->data['districts']);
+        $this->get('/projects?district=Abbottabad')->assertOk()->assertSee($values['name']);
+        $this->get('/projects?district=Upper+Chitral')->assertOk()->assertDontSee($values['name']);
     }
 
     public function test_sector_list_filters_and_escapes_names(): void
@@ -164,7 +173,7 @@ class TrackerPagesTest extends TestCase
     #[DataProvider('modules')]
     public function test_static_blade_examples_have_working_detail_and_edit_pages(string $module): void
     {
-        $this->get("/{$module}")->assertOk()->assertSee('Example');
+        $this->get("/{$module}")->assertOk()->assertSee($module === 'projects' ? 'Demo' : 'Example');
         foreach ([1, 2, 3] as $sample) {
             $this->get("/{$module}/examples/{$sample}")->assertOk()->assertSee('Example record');
             $this->get("/{$module}/examples/{$sample}/edit")->assertOk()->assertSee('Save');

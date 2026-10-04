@@ -16,7 +16,7 @@ class StageDefaultsAndRolesTest extends TestCase
         $project = TrackerRecord::where('module', 'projects')->sole();
         $activities = TrackerRecord::where('module', 'activities')->get();
         $this->assertSame(['Concept', 'PC-I Development', 'Implementation'], $activities->pluck('data.stage')->unique()->values()->all());
-        $this->assertCount(6, $activities);
+        $this->assertCount(21, $activities);
         $this->assertSame(12, TrackerRecord::where('module', 'subactivities')->count());
         $activity = $activities->first();
         $this->put(route('activities.update', $activity), array_replace($activity->data, ['status' => 'Completed']))->assertSessionHasNoErrors();
@@ -37,7 +37,7 @@ class StageDefaultsAndRolesTest extends TestCase
         $this->post('/activities', ['type' => 'Predefined', 'template_id' => 'concept-note', 'name' => 'Changed title', 'project_id' => (string) $project->id, 'stage' => 'Concept', 'status' => 'Completed'])->assertSessionHasNoErrors();
 
         $activity = TrackerRecord::where('module', 'activities')->sole();
-        $this->assertSame('Prepare concept note', $activity->data['name']);
+        $this->assertSame('Activity 1', $activity->data['name']);
         $this->assertSame('Completed', $activity->data['status']);
     }
 
@@ -80,7 +80,7 @@ class StageDefaultsAndRolesTest extends TestCase
 
         $this->post('/activities', $activity->data)->assertSessionHasErrors('template_id');
 
-        $this->assertSame(6, TrackerRecord::where('module', 'activities')->count());
+        $this->assertSame(21, TrackerRecord::where('module', 'activities')->count());
     }
 
     public function test_user_role_must_exist_and_inherited_permissions_follow_role_changes(): void

@@ -1,4 +1,8 @@
+import './detail-chat';
+import './pipeline-components';
+import './dashboard-updates';
 import './project-form';
+import './project-chat';
 const sidebar = document.querySelector('#sidebar');
 const shell = document.querySelector('#app-shell');
 const backdrop = document.querySelector('#mobile-backdrop');

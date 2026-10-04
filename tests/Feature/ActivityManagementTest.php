@@ -12,6 +12,12 @@ class ActivityManagementTest extends TestCase
 {
     use LazilyRefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        config(['dashboard.presentation' => false]);
+    }
+
     public function test_sidebar_groups_subactivity_management_and_displays_the_user_name(): void
     {
         $this->get('/subactivities')
@@ -110,8 +116,10 @@ class ActivityManagementTest extends TestCase
         $project = TrackerRecord::where('module', 'projects')->sole();
         $this->post('/activities', ['type' => 'Custom', 'project_id' => (string) $project->id, 'name' => 'Special survey', 'stage' => 'Concept', 'status' => 'Not Started'])->assertSessionHasNoErrors();
 
-        $this->get(route('activities.index', ['project_id' => $project->id, 'type' => 'Custom', 'stage' => 'Concept']))->assertOk()->assertSee('Special survey')->assertDontSee('Prepare concept note');
-        $this->get(route('activities.index', ['project_id' => $project->id, 'type' => 'Predefined', 'stage' => 'Concept']))->assertOk()->assertSee('Prepare concept note')->assertDontSee('Special survey')->assertDontSee('Procurement and mobilization');
+        $this->get(route('activities.index', ['project_id' => $project->id, 'type' => 'Custom', 'stage' => 'Concept']))->assertOk()->assertSee('Special survey')->assertDontSee('Activity 1');
+        $response = $this->get(route('activities.index', ['project_id' => $project->id, 'type' => 'Predefined', 'stage' => 'Concept']))->assertOk()->assertSee('Activity 1')->assertDontSee('Special survey');
+        $this->assertSame(5, $response->viewData('records')->total());
+        $this->assertSame(['Concept'], $response->viewData('records')->pluck('data.stage')->unique()->values()->all());
     }
 
     public function test_subactivity_documents_are_retained_on_edit(): void

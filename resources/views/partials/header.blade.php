@@ -10,8 +10,19 @@
                 <div class="flex shrink-0 items-center gap-2 sm:gap-3">
                     <label class="relative hidden w-56 lg:block xl:w-72">
                         <svg class="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
-                        <input class="field !h-9 !pl-9 !text-xs" id="global-search" data-search-url="{{ route('dashboard') }}" placeholder="Search projects by name or number..." aria-label="Search projects">
+                        <input class="field !h-9 !pl-9 !text-xs" id="global-search" data-search-url="{{ route('projects.index') }}" placeholder="Search projects by name or number..." aria-label="Search projects">
                     </label>
+                    <details class="issue-dropdown" data-issue-dropdown>
+                        <summary class="icon-button issue-notification" aria-label="{{ $headerIssueCount }} projects with issues" title="Projects with issues" data-has-issues="{{ $headerIssueCount > 0 ? 'true' : 'false' }}" data-issue-notification aria-controls="issue-project-popup">
+                            <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/><path d="M12 6v5m0 2v.1"/></svg>
+                            <span class="issue-notification-label" aria-hidden="true">Issues</span>
+                            <span class="issue-notification-count" data-issue-count @if(!$headerIssueCount) hidden @endif>{{ $headerIssueCount > 99 ? '99+' : $headerIssueCount }}</span>
+                        </summary>
+                        <section class="issue-project-popup" id="issue-project-popup" aria-label="Projects with issues">
+                            <div class="issue-popup-heading"><strong>Projects with issues</strong><a href="{{ route('projects.index', ['health' => 'Off track']) }}">View all</a></div>
+                            <div class="issue-project-list" data-issue-project-list>@include('partials.issue-projects')</div>
+                        </section>
+                    </details>
                     <div class="hidden h-8 w-px bg-slate-200 sm:block"></div>
 
                     <div class="grid size-9 place-items-center rounded-full bg-teal text-xs font-bold text-white">{{ collect(explode(' ', auth()->user()?->name ?? 'Aina Khan'))->filter()->take(2)->map(fn ($part) => mb_substr($part, 0, 1))->implode('') }}</div>

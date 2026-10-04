@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\DashboardUpdates;
 use App\Models\TrackerRecord;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
@@ -22,6 +23,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        View::composer('partials.header', DashboardUpdates::class);
         View::composer('layouts.app', function (BladeView $view): void {
             $user = auth()->user();
             $assignedUser = $user

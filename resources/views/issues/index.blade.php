@@ -7,6 +7,7 @@
         2 => ['name' => 'Site access awaiting clearance', 'project' => 'Rural Health Centres (Phase I)', 'stage' => 'Implementation', 'activity' => 'Upgrade health centres', 'description' => 'Access clearance is required for two sites.', 'reported_at' => '2026-09-28', 'reported_by' => 'Dr. Sana Ali', 'priority' => 'Medium', 'officer' => 'Project Director', 'action' => 'Coordinate with district administration.', 'due' => '2026-10-12', 'status' => 'Being Addressed'],
         3 => ['name' => 'Survey data received', 'project' => 'Urban Flood Protection Scheme', 'stage' => 'Concept', 'description' => 'Missing survey information has been provided.', 'reported_at' => '2026-09-10', 'reported_by' => 'Umar Shah', 'priority' => 'Low', 'officer' => 'District Engineer', 'status' => 'Resolved', 'resolution' => 'Survey report received and reviewed on 28 September 2026.'],
     ];
+    if (config('dashboard.presentation')) { $samples = config('dashboard.issue_samples'); }
 @endphp
 <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
     <h1 class="font-display text-2xl font-extrabold">{{ $definition['title'] }}</h1>

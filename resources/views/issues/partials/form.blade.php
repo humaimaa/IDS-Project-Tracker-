@@ -7,7 +7,7 @@
     <div class="grid gap-5 sm:grid-cols-2">
         <x-tracker-field name="name" label="Issue title" type="text" :required="true" :value="$record?->data['name'] ?? null" :options="$fieldOptions['name'] ?? config('tracker.issues.fields.0.4', [])" />
         <x-tracker-field name="description" label="Issue description" type="textarea" :required="false" :value="$record?->data['description'] ?? null" :options="$fieldOptions['description'] ?? config('tracker.issues.fields.1.4', [])" />
-        <x-tracker-field name="project" label="Project" type="select" :required="true" :value="$record?->data['project'] ?? null" :options="$fieldOptions['project'] ?? config('tracker.issues.fields.2.4', [])" />
+        <x-tracker-field name="project" label="Project" type="select" :required="true" :value="$record?->data['project'] ?? request('project')" :options="$fieldOptions['project'] ?? config('tracker.issues.fields.2.4', [])" />
         <x-tracker-field name="stage" label="Affected stage" type="select" :required="true" :value="$record?->data['stage'] ?? null" :options="$fieldOptions['stage'] ?? config('tracker.issues.fields.3.4', [])" />
         <x-tracker-field name="activity" label="Affected activity" type="text" :required="false" :value="$record?->data['activity'] ?? null" :options="$fieldOptions['activity'] ?? config('tracker.issues.fields.4.4', [])" />
         <x-tracker-field name="subactivity" label="Affected sub-activity" type="text" :required="false" :value="$record?->data['subactivity'] ?? null" :options="$fieldOptions['subactivity'] ?? config('tracker.issues.fields.5.4', [])" />

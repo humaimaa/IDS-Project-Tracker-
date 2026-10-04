@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\DashboardUpdates;
 use App\Http\Requests\SaveTrackerRecordRequest;
 use App\Models\TrackerRecord;
 use Illuminate\Http\RedirectResponse;
@@ -40,6 +41,9 @@ class TrackerController extends Controller
     public function index(Request $request): View
     {
         $query = TrackerRecord::query()->where('module', $this->module($request));
+        if (config('dashboard.presentation')) {
+            $query->whereRaw('1 = 0');
+        }
         $search = $request->string('search')->trim()->value();
         if ($search !== '') {
             $query->where('data', 'like', '%'.$search.'%');
@@ -61,8 +65,14 @@ class TrackerController extends Controller
         return $this->page($request, 'create');
     }
 
-    public function sampleShow(Request $request, string $sample): View
+    public function sampleShow(Request $request, string $sample, DashboardUpdates $updates): View
     {
+        if ($this->module($request) === 'meetings') {
+            $data = config('meeting_samples.'.$sample);
+            abort_unless(is_array($data), 404);
+            $updates->markViewed($request, new TrackerRecord(['module' => 'meetings', 'data' => $data]), (int) $sample);
+        }
+
         return $this->page($request, 'show')->with('sample', (int) $sample);
     }
 
@@ -86,9 +96,14 @@ class TrackerController extends Controller
         return to_route("{$module}.show", $record)->with('success', 'Record created.');
     }
 
-    public function show(Request $request, TrackerRecord $record): View
+    public function show(Request $request, TrackerRecord $record, DashboardUpdates $updates): View
     {
-        return $this->page($request, 'show', $record);
+        $view = $this->page($request, 'show', $record);
+        if ($record->module === 'meetings') {
+            $updates->markViewed($request, $record);
+        }
+
+        return $view;
     }
 
     public function edit(Request $request, TrackerRecord $record): View

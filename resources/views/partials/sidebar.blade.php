@@ -22,7 +22,7 @@
                     </button>
                     <div class="nav-group-content ml-[21px] hidden border-l border-white/10 py-1 pl-2" data-content="projects">
                         <a class="nav-child {{ request()->routeIs('projects.create') ? 'active' : '' }}" href="{{ route('projects.create') }}">＋ <span>Add project</span></a>
-                        <a class="nav-child {{ request()->routeIs('projects.index', 'projects.show', 'projects.edit', 'projects.sample-*') ? 'active' : '' }}" href="{{ route('projects.index') }}">≡ <span>Manage projects</span></a>
+                        <a class="nav-child {{ request()->routeIs('projects.index', 'projects.show', 'projects.details', 'projects.overview', 'dashboard.projects.show', 'projects.edit', 'projects.sample-*') ? 'active' : '' }}" href="{{ route('projects.index') }}">≡ <span>Manage projects</span></a>
                     </div>
                 </div>
 
@@ -90,6 +90,7 @@
                         <a class="nav-child {{ request()->routeIs('partners.index', 'partners.show', 'partners.edit', 'partners.delete') ? 'active' : '' }}" href="{{ route('partners.index') }}">≡ <span>Manage partners/donors</span></a>
                     </div>
                 </div>
+                <a class="nav-link {{ request()->routeIs('logs.index') ? 'active' : '' }}" href="{{ route('logs.index') }}" title="Logs"><svg class="size-[18px] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 7h6M9 12h6M9 17h6"/></svg><span class="nav-label flex-1">Logs</span></a>
             </nav>
 
             <div class="sidebar-foot flex items-center gap-3 border-t border-white/10 px-4 py-4">

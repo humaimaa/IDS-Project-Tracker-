@@ -17,7 +17,7 @@ class AccountTest extends TestCase
         $user = User::factory()->create();
         TrackerRecord::factory()->create(['module' => 'users', 'data' => ['email' => $user->email, 'role' => 'Supervisor']]);
 
-        $response = $this->actingAs($user)->get('/');
+        $response = $this->actingAs($user)->get(route('dashboard'));
 
         $response->assertOk()->assertDontSee('Section Officer</p>', false);
         $this->assertSame(2, substr_count($response->getContent(), 'Supervisor</p>'));
@@ -26,7 +26,7 @@ class AccountTest extends TestCase
     public function test_first_account_can_be_created_only_once(): void
     {
         $values = ['name' => 'Aina Khan', 'email' => 'aina@example.com', 'password' => 'first-password-123', 'password_confirmation' => 'first-password-123'];
-        $this->get('/login')->assertSee('Set up your account');
+        $this->get('/account/login')->assertSee('Set up your account');
         $this->post('/account/setup', $values)->assertRedirect(route('account.edit'))->assertSessionHasNoErrors();
         $user = User::sole();
         $this->assertAuthenticatedAs($user);
