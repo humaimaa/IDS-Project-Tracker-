@@ -3,6 +3,7 @@
 
 @source "../views/**/*.blade.php";
 @source "../js/**/*.js";
+@source "../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php";
 
 @theme {
   --font-sans: "DM Sans", sans-serif;
@@ -46,6 +47,8 @@ body { --sidebar-width: 260px; --sidebar-rail-width: 76px; }
 .sidebar.is-collapsed .sidebar-monogram::after { display: none; }
 .sidebar.is-collapsed #sidebar-nav { padding-inline: 8px; }
 .sidebar.is-collapsed .nav-link { justify-content: center; gap: 0; min-height: 44px; padding-inline: 0; }
+.extension-count-badge { position: absolute; top: 2px; right: 3px; min-width: 19px; padding: 2px 5px; border-radius: 999px; background: #b91c1c; color: #fff; font-size: 10px; font-weight: 800; line-height: 15px; text-align: center; box-shadow: 0 0 0 2px #06464b; animation: issue-bell-blink 1.8s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .extension-count-badge { animation: none; } }
 .sidebar.is-collapsed .sidebar-foot { flex-direction: column; gap: 4px; padding-inline: 0; }
 .sidebar-brand, .sidebar-foot { flex-shrink: 0; }
 .sidebar-foot { padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
@@ -319,7 +322,8 @@ body { --sidebar-width: 260px; --sidebar-rail-width: 76px; }
 
 .dashboard-discussion-panel { align-self: start; }
 .comment-notifications { position: relative; padding: 8px 0 10px; }
-.comment-notification-window { height: 112px; overflow: hidden; }
+.comment-notification-window { height: 112px; overflow: hidden; scrollbar-width: none; }
+.comment-notification-window::-webkit-scrollbar { display: none; }
 .comment-notification-track { display: flex; flex-direction: column; }
 .comment-notification-group { flex-shrink: 0; }
 .comment-notification-group[aria-hidden] { display: none; }
@@ -327,7 +331,7 @@ body { --sidebar-width: 260px; --sidebar-rail-width: 76px; }
 .comment-notifications.has-overflow .comment-notification-track { animation: comment-scroll-up var(--comment-scroll-duration, 20s) linear infinite; }
 .comment-notification { display: flex; align-items: center; gap: 10px; height: 56px; padding: 9px 20px; border-bottom: 1px solid #edf2f1; }
 .comment-notification:hover { background: #f0f8f5; }.comment-notification small { display: block; font-size: 10px; color: #788c95; }.comment-notification strong { display: block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; color: #087f80; margin-top: 4px; }.comment-notification-dot { width: 6px; height: 6px; flex-shrink: 0; border-radius: 50%; background: #0d9c8c; }
-.comment-notification-window:focus-within { overflow-y: auto; scrollbar-width: thin; }
+.comment-notification-window:focus-within { overflow-y: auto; }
 @keyframes comment-scroll-up { from { transform: translateY(0); } to { transform: translateY(-50%); } }
 @media(prefers-reduced-motion:reduce) { .comment-notifications.has-overflow .comment-notification-track { animation: none; }.comment-notification-window { overflow-y: auto; }.comment-notifications.has-overflow .comment-notification-group[aria-hidden] { display: none; } }
 
@@ -407,14 +411,15 @@ body { --sidebar-width: 260px; --sidebar-rail-width: 76px; }
 .pipeline-chevron[data-state="Delayed"] .pipeline-chevron-position,.pipeline-chevron[data-state="Issue"] .pipeline-chevron-position { font-weight: 800; }
 @keyframes pipeline-issue-pulse { 0%,100% { background-color: #a62f43; } 50% { background-color: #7e2032; } }
 @media(prefers-reduced-motion:reduce) { .pipeline-chevron[data-state="Delayed"],.pipeline-chevron[data-state="Issue"] { animation: none; } }
-.upcoming-scroll-pause { display: block; margin: 0 0 8px auto; color: #087f80; font-size: 11px; }
+.upcoming-meetings-card { height: 400px; align-self: start; overflow: hidden; }
+.upcoming-meetings-card .upcoming-meeting-list { height: 260px; max-height: 260px; }
 .upcoming-meeting-panel.has-overflow .upcoming-meeting-list { height: 260px; max-height: none; overflow: hidden; }
 .upcoming-meeting-panel.has-overflow .upcoming-meeting { height: 130px; overflow: hidden; }
-.upcoming-meeting-panel.has-overflow .upcoming-meeting-track { animation: upcoming-scroll-down var(--upcoming-duration,24s) linear infinite; }
-.upcoming-meeting-panel:hover .upcoming-meeting-track,.upcoming-meeting-panel:focus-within .upcoming-meeting-track,.upcoming-meeting-panel.is-paused .upcoming-meeting-track { animation-play-state: paused; }
+.upcoming-meeting-panel.has-overflow .upcoming-meeting-track { animation: upcoming-scroll-up var(--upcoming-duration,24s) linear infinite; }
+.upcoming-meeting-panel:hover .upcoming-meeting-track,.upcoming-meeting-panel:focus-within .upcoming-meeting-track { animation-play-state: paused; }
 .upcoming-meeting-panel:focus-within .upcoming-meeting-list { overflow-y: auto; }
-@keyframes upcoming-scroll-down { from { transform: translateY(-50%); } to { transform: translateY(0); } }
-@media(prefers-reduced-motion:reduce) { .upcoming-meeting-panel.has-overflow .upcoming-meeting-track { animation: none; }.upcoming-meeting-panel.has-overflow .upcoming-meeting-list { overflow-y: auto; }.upcoming-meeting-group[aria-hidden],.upcoming-scroll-pause { display: none; } }
+@keyframes upcoming-scroll-up { from { transform: translateY(0); } to { transform: translateY(-50%); } }
+@media(prefers-reduced-motion:reduce) { .upcoming-meeting-panel.has-overflow .upcoming-meeting-track { animation: none; }.upcoming-meeting-panel.has-overflow .upcoming-meeting-list { overflow-y: auto; }.upcoming-meeting-group[aria-hidden] { display: none; } }
 
 .district-ranked-chart { max-height: 480px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #75b8ae #edf5f4; padding-right: 10px; scrollbar-gutter: stable; }
 .district-ranked-chart .portfolio-bar,.district-chart-axis { display: grid; grid-template-columns: minmax(100px,1fr) minmax(80px,2.4fr) 36px; align-items: center; gap: 12px; }
@@ -434,3 +439,8 @@ body { --sidebar-width: 260px; --sidebar-rail-width: 76px; }
 .project-issues-list.has-overflow { max-height: 276px; overflow-y: auto; padding-right: 8px; scrollbar-width: thin; scrollbar-color: #75b8ae #edf5f4; scrollbar-gutter: stable; }.project-issues-list.has-overflow::-webkit-scrollbar { width: 6px; }.project-issues-list.has-overflow::-webkit-scrollbar-track { background: #edf5f4; border-radius: 6px; }.project-issues-list.has-overflow::-webkit-scrollbar-thumb { background: #75b8ae; border-radius: 6px; }.project-issues-list.has-overflow > * { min-height: 132px; }
 
 .detail-chat-launcher { position: fixed; bottom: 24px; right: 24px; z-index: 50; display: grid; place-items: center; width: 58px; height: 58px; border-radius: 50%; color: white; background: #087f80; box-shadow: 0 8px 26px #06464b40; }.detail-chat-count { position: absolute; top: -4px; right: -4px; min-width: 23px; padding: 3px; border-radius: 20px; background: #bf4850; font-size: 11px; font-weight: 700; }.detail-chat-dialog { position: fixed; inset: auto 20px 20px auto; margin: 0; width: min(430px,calc(100vw - 24px)); max-height: calc(100dvh - 40px); padding: 0; border: 1px solid #dceae6; border-radius: 16px; background: white; color: #12333d; box-shadow: 0 16px 60px #06464b33; }.detail-chat-dialog[open] { display: flex; flex-direction: column; }.detail-chat-dialog::backdrop { background: #062d3940; }.detail-chat-messages { min-height: 100px; overflow-y: auto; padding: 16px; max-height: 45dvh; scrollbar-width: thin; scrollbar-color: #75b8ae #edf5f4; }.detail-chat-message { padding: 12px; margin-bottom: 12px; background: #eff8f5; border-radius: 10px; font-size: 13px; overflow-wrap: anywhere; }.detail-chat-message.is-reply { margin-left: 22px; border-left: 3px solid #75b8ae; background: #f6f9fb; }.detail-chat-message strong,.detail-chat-message small { display: block; }.detail-chat-message small { margin-bottom: 6px; color: #687e87; }.detail-chat-message p { margin-top: 6px; white-space: pre-wrap; }.detail-chat-message button { margin-top: 8px; color: #087f80; font-size: 11px; font-weight: 700; }
+
+@media (hover: hover) { .comment-notifications.has-overflow:hover .comment-notification-track,.meeting-news:hover .meeting-news-track { animation-play-state: paused; } }
+
+[data-multi-select] summary::after { content: '\2304'; float: right; margin-left: 8px; color: #087f80; }
+[data-multi-select] details[open] summary::after { content: '\2303'; }

@@ -37,14 +37,16 @@ class ProjectOverviewController extends Controller
     public function updates(Request $request, DashboardUpdates $updates): JsonResponse
     {
         $data = $updates->snapshot($request);
-        $issueProjects = $this->portfolio->rows()->where('has_issues', true)->values();
+        $canView = fn (string $permission): bool => ! config('portfolio.enabled') || $request->user()->hasPortfolioPermission($permission);
+        $canViewIssues = $canView('issues.view') && $canView('projects.view');
+        $issueProjects = $canViewIssues ? $this->portfolio->rows()->where('has_issues', true)->values() : collect();
 
         return response()->json([
-            'comments' => view('partials.dashboard-comments', $data)->render(),
-            'meetings' => view('partials.dashboard-meetings', $data)->render(),
-            'upcoming' => view('partials.dashboard-upcoming', $data)->render(),
+            'comments' => $canView('comments.view') && $canView('projects.view') ? view('partials.dashboard-comments', $data)->render() : '',
+            'meetings' => $canView('meetings.view') ? view('partials.dashboard-meetings', $data)->render() : '',
+            'upcoming' => $canView('meetings.view') ? view('partials.dashboard-upcoming', $data)->render() : '',
             'issues' => $issueProjects->count(),
-            'issueProjects' => view('partials.issue-projects', compact('issueProjects'))->render(),
+            'issueProjects' => $canViewIssues ? view('partials.issue-projects', compact('issueProjects'))->render() : '',
         ])->header('Cache-Control', 'no-store');
     }
 

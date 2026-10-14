@@ -15,16 +15,8 @@ if (dashboard) {
   });
  }
  const resizeObserver = new ResizeObserver(syncCommentScroll);
- resizeObserver.observe(fragments.comments);
+ if (fragments.comments) resizeObserver.observe(fragments.comments);
  syncCommentScroll();
- dashboard.addEventListener('click', event => {
-  const button = event.target.closest('[data-upcoming-pause]');
-  if (!button) return;
-  const paused = button.getAttribute('aria-pressed') !== 'true';
-  button.setAttribute('aria-pressed', String(paused));
-  button.textContent = paused ? 'Resume scrolling' : 'Pause scrolling';
-  button.closest('.upcoming-meeting-panel').classList.toggle('is-paused', paused);
- });
  async function refresh() {
   if (refreshing || document.hidden) return;
   refreshing = true;
@@ -33,7 +25,7 @@ if (dashboard) {
    if (!response.ok) return;
    const data = await response.json();
    for (const [key, container] of Object.entries(fragments)) {
-    if (typeof data[key] !== 'string' || previous[key] === data[key] || container.contains(document.activeElement) || container.matches(':hover') || container.querySelector('.is-paused')) continue;
+    if (!container || typeof data[key] !== 'string' || previous[key] === data[key] || container.contains(document.activeElement) || container.matches(':hover')) continue;
     const scroll = container.firstElementChild?.scrollTop || 0;
     container.innerHTML = data[key];
     if (container.firstElementChild) container.firstElementChild.scrollTop = scroll;

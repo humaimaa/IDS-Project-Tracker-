@@ -25,14 +25,15 @@ class DashboardUpdatesTest extends TestCase
         $this->get(route('projects.index', ['health' => 'Off track']))->assertOk()->assertViewHas('records', fn ($records): bool => $records->total() === 2);
     }
 
-    public function test_meeting_seen_state_is_saved_per_user_and_updated_meetings_reappear(): void
+    public function test_held_meeting_highlights_remain_visible_after_reading(): void
     {
+        $this->travelTo(now('Asia/Karachi')->setDate(2026, 10, 13)->startOfDay());
         $first = User::factory()->create();
         $second = User::factory()->create();
-        $meeting = TrackerRecord::factory()->create(['module' => 'meetings', 'data' => ['name' => 'Planning review', 'date' => '2026-10-10T10:00', 'venue' => 'Peshawar', 'agenda' => 'Review allocations', 'minutes' => 'Awaiting approval', 'status' => 'Scheduled']]);
+        $meeting = TrackerRecord::factory()->create(['module' => 'meetings', 'data' => ['name' => 'Planning review', 'date' => '2026-10-10T10:00', 'venue' => 'Peshawar', 'agenda' => 'Review allocations', 'minutes' => 'Awaiting approval', 'status' => 'Held']]);
         $this->actingAs($first)->get(route('dashboard'))->assertViewHas('unseenMeetings', fn ($rows): bool => $rows->count() === 1);
         $this->get(route('meetings.show', $meeting))->assertOk()->assertSee('Peshawar')->assertSee('Review allocations')->assertSee('Awaiting approval');
-        $this->get(route('dashboard'))->assertViewHas('unseenMeetings', fn ($rows): bool => $rows->isEmpty());
+        $this->get(route('dashboard'))->assertViewHas('unseenMeetings', fn ($rows): bool => $rows->count() === 1);
         $this->actingAs($second)->get(route('dashboard'))->assertViewHas('unseenMeetings', fn ($rows): bool => $rows->count() === 1);
         $meeting->update(['data' => array_replace($meeting->data, ['minutes' => 'Approved by participants'])]);
         $this->actingAs($first)->get(route('dashboard'))->assertViewHas('unseenMeetings', fn ($rows): bool => $rows->count() === 1);
@@ -63,11 +64,11 @@ class DashboardUpdatesTest extends TestCase
         $this->getJson(route('dashboard.updates'))->assertOk()->assertJsonStructure(['comments', 'meetings', 'upcoming', 'issues'])->assertSee('New comment')->assertDontSee('Latest update');
     }
 
-    public function test_guest_sample_meeting_is_marked_seen_in_the_session_only(): void
+    public function test_guest_held_highlights_remain_visible_without_database_writes(): void
     {
-        $this->get(route('dashboard'))->assertViewHas('unseenMeetings', fn ($rows): bool => $rows->count() === 3);
+        $this->get(route('dashboard'))->assertViewHas('unseenMeetings', fn ($rows): bool => $rows->count() === 1);
         $this->get(route('meetings.sample-show', 2))->assertOk()->assertSee('Meeting minutes');
-        $this->get(route('dashboard'))->assertViewHas('unseenMeetings', fn ($rows): bool => $rows->count() === 2);
+        $this->get(route('dashboard'))->assertViewHas('unseenMeetings', fn ($rows): bool => $rows->count() === 1);
         $this->assertDatabaseCount('tracker_records', 0);
     }
 

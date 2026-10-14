@@ -69,11 +69,6 @@ class SaveTrackerRecordRequest extends FormRequest
                 $this->merge([$field[0] => []]);
             }
         }
-        foreach (['meetings' => 'actions'] as $type => $key) {
-            if ($module === $type && ! $this->has($key)) {
-                $this->merge([$key => []]);
-            }
-        }
         if ($module === 'projects' && $this->filled('currency')) {
             $this->merge(['currency' => strtoupper($this->input('currency'))]);
         }
@@ -147,18 +142,6 @@ class SaveTrackerRecordRequest extends FormRequest
                     $fail('A role with this name already exists.');
                 }
             };
-        }
-        if ($module === 'meetings') {
-            $rules['actions'] = ['array', 'max:100'];
-            $rules['actions.*'] = ['array:description,officer,due,status,remarks,activity,issue'];
-            foreach (['description', 'officer'] as $key) {
-                $rules['actions.*.'.$key] = ['required', 'string', 'max:5000'];
-            }
-            foreach (['remarks', 'activity', 'issue'] as $key) {
-                $rules['actions.*.'.$key] = ['nullable', 'string', 'max:5000'];
-            }
-            $rules['actions.*.due'] = ['required', 'date'];
-            $rules['actions.*.status'] = ['required', Rule::in(['Not Started', 'In Progress', 'Completed', 'On Hold', 'Not Applicable'])];
         }
 
         if (in_array($module, ['projects', 'activities', 'subactivities', 'issues', 'meetings'])) {

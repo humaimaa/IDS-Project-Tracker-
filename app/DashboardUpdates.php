@@ -21,23 +21,23 @@ class DashboardUpdates
 
     public function snapshot(Request $request): array
     {
+        if (config('portfolio.enabled')) {
+            return app(DatabasePortfolio::class)->updates($request);
+        }
         $meetings = config('dashboard.presentation') ? collect() : TrackerRecord::where('module', 'meetings')->latest('id')->get();
         $demo = $meetings->isEmpty();
         if ($demo) {
             $meetings = collect(config('meeting_samples'))->map(fn (array $data, int $id): TrackerRecord => new TrackerRecord(['module' => 'meetings', 'data' => array_merge($data, ['sample_id' => $id])]));
         }
-        $seen = $request->user()
-            ? TrackerRecord::where('module', 'meeting_reads')->where('data->user_id', (string) $request->user()->id)->get()->pluck('data.version', 'data.meeting_key')->all()
-            : $request->session()->get('meeting_reads', []);
-        $meetingRows = $meetings->map(function (TrackerRecord $meeting) use ($demo, $seen): array {
+        $meetingRows = $meetings->map(function (TrackerRecord $meeting) use ($demo): array {
             $data = $meeting->data;
             $key = $demo ? 'sample:'.$data['sample_id'] : 'meeting:'.$meeting->id;
             $date = ! empty($data['date']) ? CarbonImmutable::parse($data['date'], 'Asia/Karachi') : null;
 
-            return ['key' => $key, 'name' => $data['name'], 'date' => $date, 'location' => $data['venue'] ?? 'Location not set', 'status' => $data['status'] ?? 'Scheduled', 'unseen' => ($seen[$key] ?? '') !== $this->version($meeting), 'url' => $demo ? route('meetings.sample-show', $data['sample_id']) : route('meetings.show', $meeting), 'demo' => $demo, 'order' => $meeting->updated_at?->timestamp ?? $date?->timestamp ?? 0];
+            return ['key' => $key, 'name' => $data['name'], 'date' => $date, 'location' => $data['venue'] ?? 'Location not set', 'status' => $data['status'] ?? 'Scheduled', 'url' => $demo ? route('meetings.sample-show', $data['sample_id']) : route('meetings.show', $meeting), 'demo' => $demo, 'order' => $meeting->updated_at?->timestamp ?? $date?->timestamp ?? 0];
         });
 
-        return ['unseenMeetings' => $meetingRows->where('unseen', true)->sortByDesc('order')->values(), 'upcomingMeetings' => $meetingRows->filter(fn (array $meeting): bool => $meeting['status'] === 'Scheduled' && $meeting['date']?->greaterThanOrEqualTo(now('Asia/Karachi')))->sortBy('date')->values(), 'recentComments' => $this->comments($request)];
+        return ['unseenMeetings' => $meetingRows->filter(fn (array $meeting): bool => $meeting['status'] === 'Held' && $meeting['date']?->lessThanOrEqualTo(now('Asia/Karachi')))->sortByDesc('order')->values(), 'upcomingMeetings' => $meetingRows->filter(fn (array $meeting): bool => $meeting['status'] === 'Scheduled' && $meeting['date']?->greaterThanOrEqualTo(now('Asia/Karachi')))->sortBy('date')->values(), 'recentComments' => $this->comments($request)];
     }
 
     public function markViewed(Request $request, TrackerRecord $meeting, ?int $sample = null): void
@@ -62,6 +62,11 @@ class DashboardUpdates
 
     public function markCommentsRead(Request $request, array $ids): void
     {
+        if (config('portfolio.enabled')) {
+            app(DatabasePortfolio::class)->markCommentsRead($request, $ids);
+
+            return;
+        }
         $ids = TrackerRecord::where('module', 'project_comments')->whereIn('id', $ids)->pluck('id')->all();
         if (! $request->user()) {
             $request->session()->put('comment_reads', array_values(array_unique(array_merge($request->session()->get('comment_reads', []), $ids))));

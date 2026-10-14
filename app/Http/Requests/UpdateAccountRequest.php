@@ -10,7 +10,7 @@ class UpdateAccountRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user() !== null;
+        return $this->user() !== null && (! config('portfolio.enabled') || $this->user()->account_status === 'Active');
     }
 
     public function rules(): array

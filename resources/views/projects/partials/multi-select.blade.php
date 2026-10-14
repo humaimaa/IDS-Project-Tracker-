@@ -1,0 +1,3 @@
+<div class="min-w-0 text-sm font-semibold text-slate-600" data-multi-select>
+<span>{{ $label }}</span><details class="relative mt-2 rounded-lg border border-slate-200 bg-white"><summary class="cursor-pointer list-none px-3 py-2.5 text-sm font-normal" data-selection-summary>Select {{ strtolower($label) }}</summary>
+<div class="max-h-56 space-y-2 overflow-y-auto border-t border-slate-100 p-3">@forelse($choices as $choice)<label class="flex items-start gap-2 text-sm font-normal"><input class="mt-1 shrink-0" type="checkbox" name="{{ $field }}[]" value="{{ $choice->id }}" @checked(in_array($choice->id, $selected))><span>{{ $choice->name }}</span></label>@empty<p class="text-xs text-slate-500">No options available.</p>@endforelse</div></details></div>

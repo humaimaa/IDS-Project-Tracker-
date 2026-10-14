@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.guest')
 
 @section('content')
 <form class="panel mx-auto max-w-md space-y-5 p-6" method="post" action="{{ route('login.store') }}">

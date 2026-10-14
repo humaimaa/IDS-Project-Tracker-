@@ -2,26 +2,41 @@
 
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\AuditLogController;
+use App\Http\Controllers\EmailChangeController;
 use App\Http\Controllers\ProjectCommentController;
 use App\Http\Controllers\ProjectOverviewController;
 use App\Http\Controllers\ProjectTrackingController;
 use App\Http\Controllers\SessionController;
 use App\Http\Controllers\TrackerController;
+use App\Http\Middleware\AuthorizePortfolio;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function (): void {
     Route::post('/account/setup', [SessionController::class, 'setup'])->middleware('throttle:5,1')->name('account.setup');
-    Route::view('/login', 'users.demo-login')->name('login');
+    if (config('portfolio.enabled')) {
+        Route::get('/login', [SessionController::class, 'create'])->name('login');
+    } else {
+        Route::view('/login', 'users.demo-login')->name('login');
+    }
     Route::get('/account/login', [SessionController::class, 'create'])->name('account.login');
     Route::post('/login', [SessionController::class, 'store'])->middleware('throttle:5,1')->name('login.store');
 });
 Route::middleware('auth')->group(function (): void {
+    Route::get('/account/email/verify/{user}/{token}', [EmailChangeController::class, 'show'])->middleware(['signed', 'throttle:10,1'])->name('account.email.verify');
+    Route::post('/account/email/verify/{user}/{token}', [EmailChangeController::class, 'confirm'])->middleware(['signed', 'throttle:10,1'])->name('account.email.confirm');
+    Route::post('/account/email/resend', [EmailChangeController::class, 'resend'])->middleware('throttle:3,1')->name('account.email.resend');
+    Route::delete('/account/email', [EmailChangeController::class, 'cancel'])->name('account.email.cancel');
     Route::get('/account', [AccountController::class, 'edit'])->name('account.edit');
     Route::put('/account', [AccountController::class, 'update'])->middleware('throttle:10,1')->name('account.update');
     Route::post('/logout', [SessionController::class, 'destroy'])->name('logout');
 });
 
 Route::view('/', 'landing')->name('home');
+if (config('portfolio.enabled')) {
+    Route::middleware(['auth', AuthorizePortfolio::class])->group(__DIR__.'/portfolio.php');
+
+    return;
+}
 Route::get('/dashboard', [ProjectOverviewController::class, 'dashboard'])->name('dashboard');
 Route::post('/dashboard/comments/read', [ProjectOverviewController::class, 'readComments'])->middleware('throttle:120,1')->name('dashboard.comments.read');
 Route::get('/dashboard/updates', [ProjectOverviewController::class, 'updates'])->name('dashboard.updates');

@@ -235,7 +235,7 @@ class TrackerPagesTest extends TestCase
         $this->assertSame([], Storage::disk('local')->allFiles());
     }
 
-    public function test_meetings_save_multiple_projects_and_follow_up_actions(): void
+    public function test_meetings_save_multiple_projects_without_retired_follow_up_actions(): void
     {
         $values = [
             'name' => 'Joint review', 'projects' => ['Rural Health Centres (Phase I)', 'Secondary Schools Upgradation'],
@@ -247,8 +247,8 @@ class TrackerPagesTest extends TestCase
 
         $record = TrackerRecord::sole();
         $this->assertSame($values['projects'], $record->data['projects']);
-        $this->assertSame('Send cost estimates', $record->data['actions'][0]['description']);
-        $this->get("/meetings/{$record->id}")->assertSee('Send cost estimates');
+        $this->assertArrayNotHasKey('actions', $record->data);
+        $this->get("/meetings/{$record->id}")->assertDontSee('Send cost estimates');
     }
 
     public function test_list_search_filters_records_and_details_escape_user_content(): void

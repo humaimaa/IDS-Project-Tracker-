@@ -3,6 +3,7 @@ $palette = ['#0d9488', '#5b8def', '#a16bd1', '#e49a36', '#db6c86', '#54a478', '#
 @endphp
 <section class="panel p-5 sm:p-6">
     <div class="mb-6 flex items-center justify-between gap-4"><h2 class="font-display text-base font-bold">{{ $chart['title'] }}</h2><span class="text-xs text-slate-400">{{ $filter === 'partner' ? 'Select a slice or donor' : ($filter === 'district' ? 'Select a district to explore' : 'Select a bar to explore') }}</span></div>
+    @if($filter === 'district' && config('portfolio.enabled'))<p class="mb-4 text-xs text-slate-500">A project covering several districts is counted in each selected district.</p>@endif
     @if($filter === 'partner' && $chart['counts']->sum() > 0)
     @php
 $offset = 0;

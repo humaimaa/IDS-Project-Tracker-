@@ -8,10 +8,13 @@
                     </div>
                 </div>
                 <div class="flex shrink-0 items-center gap-2 sm:gap-3">
+                    @if(!config('portfolio.enabled') || auth()->user()?->hasPortfolioPermission('projects.view'))
                     <label class="relative hidden w-56 lg:block xl:w-72">
                         <svg class="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
                         <input class="field !h-9 !pl-9 !text-xs" id="global-search" data-search-url="{{ route('projects.index') }}" placeholder="Search projects by name or number..." aria-label="Search projects">
                     </label>
+                    @endif
+                    @if(!config('portfolio.enabled') || (auth()->user()?->hasPortfolioPermission('issues.view') && auth()->user()?->hasPortfolioPermission('projects.view')))
                     <details class="issue-dropdown" data-issue-dropdown>
                         <summary class="icon-button issue-notification" aria-label="{{ $headerIssueCount }} projects with issues" title="Projects with issues" data-has-issues="{{ $headerIssueCount > 0 ? 'true' : 'false' }}" data-issue-notification aria-controls="issue-project-popup">
                             <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/><path d="M12 6v5m0 2v.1"/></svg>
@@ -23,10 +26,11 @@
                             <div class="issue-project-list" data-issue-project-list>@include('partials.issue-projects')</div>
                         </section>
                     </details>
+                    @endif
                     <div class="hidden h-8 w-px bg-slate-200 sm:block"></div>
 
-                    <div class="grid size-9 place-items-center rounded-full bg-teal text-xs font-bold text-white">{{ collect(explode(' ', auth()->user()?->name ?? 'Aina Khan'))->filter()->take(2)->map(fn ($part) => mb_substr($part, 0, 1))->implode('') }}</div>
-                    <div class="hidden text-xs xl:block"><p class="font-bold">{{ auth()->user()?->name ?? 'Aina Khan' }}</p><p class="mt-1 text-[11px] text-slate-500">{{ $sidebarRole ?? 'Section Officer' }}</p></div>
+                    <div class="grid size-9 place-items-center rounded-full bg-teal text-xs font-bold text-white">{{ collect(explode(' ', auth()->user()?->name ?? (config('portfolio.enabled') ? 'Visitor' : 'Aina Khan')))->filter()->take(2)->map(fn ($part) => mb_substr($part, 0, 1))->implode('') }}</div>
+                    <div class="hidden text-xs xl:block"><p class="font-bold">{{ auth()->user()?->name ?? (config('portfolio.enabled') ? 'Visitor' : 'Aina Khan') }}</p><p class="mt-1 text-[11px] text-slate-500">{{ $sidebarRole ?? 'Section Officer' }}</p></div>
                     @include('partials.account-menu', ['placement' => 'below'])
                 </div>
             </header>

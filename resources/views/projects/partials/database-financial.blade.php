@@ -1,0 +1,27 @@
+<section class="panel p-5"><div class="flex flex-wrap justify-between gap-3"><div><h2 class="font-display text-lg font-bold">Financial information</h2><p class="mt-2 text-xs text-slate-500">Amounts are displayed in millions in the selected report currency. Missing values are not treated as zero.</p></div>@if(!$project->archived_at && auth()->user()?->hasPortfolioPermission('financial-reports.create'))<a class="portfolio-primary" href="{{ route('financial-information.create', ['project_id' => $project->id]) }}">+ Financial information</a>@endif</div>
+</section>
+<section class="space-y-4" aria-label="Overall project financial information"><h2 class="font-display text-lg font-bold">Overall project financial information</h2>
+@if($project->costVersions->first())
+@php($cost = $project->costVersions->first())
+<div class="financial-summary grid gap-3 sm:grid-cols-3">@foreach(['total_cost' => 'Total project cost', 'foreign_cost' => 'Foreign share', 'local_cost' => 'Local share'] as $field => $label)<article class="panel financial-summary-card p-5"><p class="text-xs text-slate-500">{{ $label }} &middot; {{ $cost->currency_code }} million</p><strong class="mt-3 block text-2xl">{{ $cost->$field === null ? 'Not supplied' : number_format((float) $cost->$field / 1000000, 2) }}</strong></article>@endforeach</div>
+@endif
+
+</section>
+<section class="panel p-5"><h2 class="font-display text-lg font-bold">Annual financial information</h2>
+<form data-financial-filter method="get" class="mt-5 grid gap-4 sm:grid-cols-4"><input type="hidden" name="tab" value="financial"><label class="text-xs">Financial year<select name="year" class="field mt-2">@foreach($reports->unique('financial_year_id') as $choice)<option value="{{ $choice->financial_year_id }}" @selected($yearId === $choice->financial_year_id)>{{ $choice->financialYear->label }}</option>@endforeach</select></label><label class="text-xs">Quarter<select class="field mt-2" name="quarter"><option value="">All quarters</option>@foreach(range(1,4) as $number)<option value="{{ $number }}" @selected((int) request('quarter') === $number)>Q{{ $number }}</option>@endforeach</select></label><button class="portfolio-primary self-end">Apply</button></form>
+</section>
+@if($report)
+<div class="space-y-5">@foreach($report->annuals as $annual)<section class="panel p-5"><h3 class="font-bold">Annual figures · {{ $annual->currency_code }} million</h3><div class="mt-5 grid gap-4 sm:grid-cols-2">@foreach(['total_allocation' => 'Allocation', 'expenditure_ytd' => 'Expenditure to date', 'cumulative_expenditure' => 'Cumulative expenditure', 'disbursement_target' => 'Disbursement target', 'disbursement_ytd' => 'Disbursement to date'] as $field => $label)<div class="panel financial-summary-card p-4"><p class="text-xs text-slate-500">{{ $label }}</p><strong class="mt-2 block text-lg text-teal">{{ $annual->$field === null ? 'Not supplied' : number_format((float) $annual->$field / 1000000, 2) }}</strong></div>@endforeach</div>
+@if((float) $annual->disbursement_target > 0 && $annual->disbursement_ytd !== null)<div class="mt-5"><p class="text-sm">Target achievement: {{ number_format((float) $annual->disbursement_ytd / (float) $annual->disbursement_target * 100, 1) }}%</p><div class="mt-2 h-3 overflow-hidden rounded-full bg-slate-100"><div class="h-full bg-emerald-400" style="width: {{ min(100, (float) $annual->disbursement_ytd / (float) $annual->disbursement_target * 100) }}%"></div></div></div>@endif</section>@endforeach</div>
+<div class="financial-charts grid gap-5">
+@foreach($quarters->groupBy('currency_code') as $currency => $currencyQuarters)
+<section class="panel min-w-0 p-5"><h3 class="font-bold">Quarterly plan, disbursement &amp; expenditure &middot; {{ $currency }} million</h3>
+<p class="mt-3 text-xs text-slate-500"><span class="text-amber-700">Planned</span> &middot; <span class="text-teal">Disbursed</span> &middot; <span class="text-blue-600">Expenditure</span></p>
+@php($maximum = max(1, (float) $currencyQuarters->max('planned_disbursement'), (float) $currencyQuarters->max('actual_disbursement'), (float) $currencyQuarters->max('expenditure_amount')))
+<div class="quarter-chart">@foreach($currencyQuarters->sortBy('period.quarter_no') as $quarter)<div class="quarter-column"><div class="quarter-bars">@foreach(['planned_disbursement', 'actual_disbursement', 'expenditure_amount'] as $field)<div class="{{ $field === 'expenditure_amount' ? 'expenditure' : ($field === 'planned_disbursement' ? '!bg-amber-400' : '') }}" style="height: {{ max(0, (float) $quarter->$field / $maximum * 100) }}%"><span>{{ $quarter->$field === null ? 'N/A' : number_format((float) $quarter->$field / 1000000, 2) }}</span></div>@endforeach</div><strong class="mt-3 block text-xs">Q{{ $quarter->period->quarter_no }}</strong></div>@endforeach</div>
+<div class="mt-6 overflow-x-auto"><table class="portfolio-table"><thead><tr><th>Quarter</th><th>Planned</th><th>Disbursed</th><th>Expenditure</th></tr></thead><tbody>@foreach($currencyQuarters->sortBy('period.quarter_no') as $quarter)<tr><td>Q{{ $quarter->period->quarter_no }}</td>@foreach(['planned_disbursement', 'actual_disbursement', 'expenditure_amount'] as $field)<td>{{ $quarter->$field === null ? 'Not supplied' : number_format((float) $quarter->$field / 1000000, 2) }}</td>@endforeach</tr>@endforeach</tbody></table></div>
+</section>
+@endforeach
+</div>
+@else<section class="panel p-6 text-sm text-slate-500">No financial reports have been entered for this project.</section>@endif
+

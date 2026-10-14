@@ -1,11 +1,11 @@
-@extends('layouts.app')
+@extends('layouts.guest')
 
 @section('content')
 <form class="panel mx-auto max-w-md space-y-5 p-6" method="post" action="{{ route('account.setup') }}">
     @csrf
     <h1 class="font-display text-2xl font-extrabold">Set up your account</h1>
     <p class="text-sm text-slate-500">Create the first login account for this tracker.</p>
-    <x-tracker-field name="name" label="User name" :required="true" value="Aina Khan" />
+    <x-tracker-field name="name" label="User name" :required="true" :value="config('portfolio.enabled') ? '' : 'Aina Khan'" />
     <x-tracker-field name="email" label="Email" type="email" :required="true" />
     <label class="block text-sm font-semibold text-slate-600">
         Password (at least 12 characters)

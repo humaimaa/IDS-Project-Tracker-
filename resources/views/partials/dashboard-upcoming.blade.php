@@ -1,5 +1,4 @@
 <div class="upcoming-meeting-panel {{ count($upcomingMeetings) > 2 ? 'has-overflow' : '' }}">
-@if(count($upcomingMeetings) > 2)<button type="button" class="upcoming-scroll-pause" data-upcoming-pause aria-pressed="false">Pause scrolling</button>@endif
 <div class="upcoming-meeting-list"><div class="upcoming-meeting-track" style="--upcoming-duration: {{ max(18, count($upcomingMeetings) * 6) }}s">
 @for($copy = 0; $copy < (count($upcomingMeetings) > 2 ? 2 : 1); $copy++)
 <div class="upcoming-meeting-group" @if($copy > 0) aria-hidden="true" @endif>

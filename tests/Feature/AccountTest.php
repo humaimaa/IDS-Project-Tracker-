@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\EmailChangeMailer;
 use App\Models\TrackerRecord;
 use App\Models\User;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
@@ -48,6 +49,9 @@ class AccountTest extends TestCase
         $user = User::factory()->create();
         $other = User::factory()->create();
         $password = $user->password;
+        $originalEmail = $user->email;
+        $originalVerifiedAt = $user->email_verified_at;
+        $this->partialMock(EmailChangeMailer::class)->shouldReceive('send')->once();
 
         $this->actingAs($user)->put('/account', [
             'name' => 'Aina Khan', 'email' => 'aina@example.com',
@@ -56,9 +60,10 @@ class AccountTest extends TestCase
 
         $user->refresh();
         $this->assertSame('Aina Khan', $user->name);
-        $this->assertSame('aina@example.com', $user->email);
+        $this->assertSame($originalEmail, $user->email);
+        $this->assertSame('aina@example.com', $user->pending_email);
         $this->assertSame($password, $user->password);
-        $this->assertNull($user->email_verified_at);
+        $this->assertTrue($originalVerifiedAt->equalTo($user->email_verified_at));
         $this->assertSame($other->email, $other->fresh()->email);
         $this->get('/account')->assertOk()->assertSee('Aina Khan')->assertSee('Logout')->assertSee('aina@example.com');
     }

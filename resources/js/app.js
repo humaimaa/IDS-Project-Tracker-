@@ -1,7 +1,10 @@
+import './issue-targets';
 import './detail-chat';
+import './stored-project-chat';
 import './pipeline-components';
 import './dashboard-updates';
 import './project-form';
+import './project-creation';
 import './project-chat';
 const sidebar = document.querySelector('#sidebar');
 const shell = document.querySelector('#app-shell');
@@ -115,6 +118,7 @@ document.querySelectorAll('[data-toggle-group]').forEach(button => {
 syncSidebar();
 const globalSearch = document.querySelector('#global-search');
 const isDashboard = Boolean(document.querySelector('#dashboard-page'));
+ if (globalSearch) {
  globalSearch.value = isDashboard ? new URLSearchParams(window.location.search).get('search') || '' : '';
  globalSearch.addEventListener('keydown', event => {
   if (event.key === 'Enter') {
@@ -124,6 +128,7 @@ const isDashboard = Boolean(document.querySelector('#dashboard-page'));
    window.location.assign(url);
   }
  });
+}
 document.querySelectorAll('[data-delete-form]').forEach(form => form.addEventListener('submit', event => { if (!confirm('Delete this record?')) event.preventDefault(); }));
 
 document.addEventListener('click', event => {

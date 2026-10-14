@@ -17,7 +17,7 @@
         <x-tracker-field name="decisions" label="Decisions" type="textarea" :required="false" :value="$record?->data['decisions'] ?? null" :options="$fieldOptions['decisions'] ?? config('tracker.meetings.fields.9.4', [])" />
     </div>
 
-    @include('meetings.partials.actions')
+
     @include('partials.documents-form')
     <div class="flex justify-end gap-3 border-t border-slate-100 pt-5">
         <a class="rounded-lg border border-slate-200 px-4 py-2 text-sm" href="{{ $record?->exists ? route($module.'.show', $record) : route($module.'.index') }}">Cancel</a>

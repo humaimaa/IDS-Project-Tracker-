@@ -9,6 +9,9 @@ class ProjectPortfolio
 {
     public function rows(): Collection
     {
+        if (config('portfolio.enabled')) {
+            return app(DatabasePortfolio::class)->rows();
+        }
         if (config('dashboard.presentation')) {
             return collect(config('dashboard.projects'))->map(fn (array $data): array => $this->row(new TrackerRecord(['module' => 'projects', 'data' => $data]), collect(), collect(), true));
         }
